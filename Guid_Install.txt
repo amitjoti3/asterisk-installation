@@ -1,0 +1,78 @@
+how to install Asterisk 13 + Dahdi + Libpri
+
+>>>>>>>>>>>>>>>>>>>>>> By : Abdulkader Alrazj Updated 3 October 2020 <<<<<<<<<<<<<<<<<<<<
+
+
+===== 1 =====
+apt update && apt upgrade -y
+
+cd /usr/src
+===== 2 =====
+wget https://downloads.asterisk.org/pub/telephony/asterisk/asterisk-13-current.tar.gz
+wget https://downloads.asterisk.org/pub/telephony/libpri/libpri-current.tar.gz
+wget https://downloads.asterisk.org/pub/telephony/dahdi-linux-complete/dahdi-linux-complete-current.tar.gz
+===== 3 =====
+apt install build-essential wget libssl-dev libncurses5-dev libnewt-dev libxml2-dev linux-headers-$(uname -r) libsqlite3-dev uuid-dev libjansson-dev git subversion -y
+===== 4 =====
+tar -xvf asterisk-*.tar.gz && tar -xvf libpri-*.tar.gz && tar -xvf dahdi-linux-complete-*.tar.gz
+
+==================== 5- Install DAHDI ====================
+
+cd /usr/src && cd dahdi-linux-complete-* && make && make install && make config
+ 
+==================== 6- Install libpri ====================
+
+cd /usr/src && cd libpri-* && make && make install
+
+==================== 7- Install Asterisk ====================
+
+cd /usr/src && cd asterisk-* && contrib/scripts/get_mp3_source.sh && contrib/scripts/install_prereq install && ./configure && make menuselect && make && make install && make samples && make config && ldconfig
+
+
+
+systemctl start asterisk
+
+asterisk -rvvv
+
+===== 8 =====
+groupadd asterisk && useradd -d /var/lib/asterisk -g asterisk asterisk
+===== 9 =====
+sed -i 's/#AST_USER="asterisk"/AST_USER="asterisk"/g' /etc/default/asterisk && sed -i 's/#AST_GROUP="asterisk"/AST_GROUP="asterisk"/g' /etc/default/asterisk
+===== 10 =====
+sed -i 's/;runuser = asterisk/runuser = asterisk/g' /etc/asterisk/asterisk.conf && sed -i 's/;rungroup = asterisk/rungroup = asterisk/g' /etc/asterisk/asterisk.conf
+===== 11 =====
+chown -R asterisk:asterisk /var/spool/asterisk /var/run/asterisk /etc/asterisk /var/{lib,log,spool}/asterisk /usr/lib/asterisk
+===== 12 =====
+systemctl start asterisk
+===== 13 =====
+asterisk -rvvv
+
+
+====================  14- Asterisk GUI Web Interfaces ====================
+
+cd /usr/src && svn co http://svn.digium.com/svn/asterisk-gui/trunk asterisk-gui
+===== 15 =====
+cd /usr/src && cd asterisk-gui && ./configure && make && make install && cd /usr/src && cd asterisk-13.23.0 && make samples
+
+===== 16 =====
+
+nano /etc/asterisk/http.conf
+CTRL + X > Y    For save Config
+
+nano /etc/asterisk/manager.conf
+CTRL + X > Y    For save Config
+
+user = admin
+pass = admin123
+
+===== 17 =====
+chown -R asterisk:asterisk /var/spool/asterisk /var/run/asterisk /etc/asterisk /var/{lib,log,spool}/asterisk /usr/lib/asterisk
+===== 18 =====
+systemctl start asterisk
+
+
+asterisk -rvvv
+
+reload
+
+192.168.90.20:8188
